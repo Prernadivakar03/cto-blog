@@ -190,4 +190,4 @@ The visual direction is a "blueprint and gold" look:
 
 ## Author
 
-`<Prerna Divakar>`
+`Prerna Divakar`
