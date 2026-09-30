@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "title": "Novel 3D Printing in Modern Civil Engineering",
+    "excerpt": "Layer-by-layer concrete extrusion is cutting build times dramatically and reshaping how we think about structural geometry.",
+    "date": "2026-09-22",
+    "category": "3D Printing"
+  },
+  {
+    "id": 2,
+    "title": "Automated Gantry Systems in Site Construction",
+    "excerpt": "Rail-mounted gantries bring factory precision to open sites, from rebar placement to facade assembly.",
+    "date": "2026-09-15",
+    "category": "Automation"
+  },
+  {
+    "id": 3,
+    "title": "Sustainable High-Rise Development Strategies",
+    "excerpt": "Low-carbon cement, mass timber hybrids and passive cooling: what tall buildings look like in a net-zero decade.",
+    "date": "2026-09-08",
+    "category": "Sustainability"
+  },
+  {
+    "id": 4,
+    "title": "Digital Twins for Infrastructure Lifecycle Management",
+    "excerpt": "Real-time sensor data mirrored in a virtual model helps teams predict maintenance before problems surface.",
+    "date": "2026-08-29",
+    "category": "Digital"
+  },
+  {
+    "id": 5,
+    "title": "Robotic Bricklaying and the Future of Masonry",
+    "excerpt": "Autonomous arms lay thousands of bricks a day, and skilled masons are becoming robot supervisors and designers.",
+    "date": "2026-08-18",
+    "category": "Robotics"
+  }
+]
