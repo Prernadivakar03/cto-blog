@@ -42,6 +42,17 @@ function createFileStore(subsFile = DEFAULT_SUBS_FILE) {
   };
 }
 
+// posts.json is the source of truth: upsert every post, delete any that were removed
+async function syncPosts(collection, seed) {
+  if (!seed.length) return; // never wipe the collection because of an empty or bad file
+  await collection.bulkWrite(
+    seed.map((p) => ({
+      replaceOne: { filter: { id: p.id }, replacement: p, upsert: true },
+    }))
+  );
+  await collection.deleteMany({ id: { $nin: seed.map((p) => p.id) } });
+}
+
 async function createMongoStore(uri) {
   const { MongoClient } = require("mongodb");
   const client = new MongoClient(uri, { serverSelectionTimeoutMS: 8000 });
@@ -54,12 +65,7 @@ async function createMongoStore(uri) {
   // The unique index makes duplicate protection atomic, even under concurrent requests
   await subs.createIndex({ email: 1 }, { unique: true });
 
-  // posts.json is the source of truth: sync it into the database on every start
-  await posts.bulkWrite(
-    readJSON(POSTS_FILE).map((p) => ({
-      replaceOne: { filter: { id: p.id }, replacement: p, upsert: true },
-    }))
-  );
+  await syncPosts(posts, readJSON(POSTS_FILE));
 
   return {
     kind: "mongodb",
@@ -98,4 +104,4 @@ async function createStore() {
   }
 }
 
-module.exports = { createStore, createFileStore };
+module.exports = { createStore, createFileStore, syncPosts };

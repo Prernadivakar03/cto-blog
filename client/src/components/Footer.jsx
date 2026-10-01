@@ -1,7 +1,7 @@
 const links = [
   { label: "All articles", href: "#/" },
   { label: "Newsletter", href: "#newsletter" },
-  { label: "Contact", href: "mailto:prerna@example.com" }, 
+  { label: "Contact", href: "mailto:YOUR_GMAIL_ADDRESS" }, 
   { label: "Back to top", href: "#top" },
 ];
 

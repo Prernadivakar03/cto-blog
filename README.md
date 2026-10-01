@@ -94,9 +94,10 @@ Request: `{ "email": "you@example.com" }`
 | 400 | `Email is required` | Missing, empty or non-string email |
 | 400 | `Please enter a valid email address` | Bad format or over 254 characters |
 | 400 | `Invalid JSON body` | Malformed request body |
-| 409 | `You're already subscribed` | Duplicate email |
 | 413 | `Request too large` | Body over 10kb |
 | 429 | `Too many attempts...` | More than 10 requests per 15 minutes per IP |
+
+Repeat signups also return `200`, so the endpoint can't be used to check whether an address is subscribed.
 
 ### `GET /api/health`
 Returns `{ "status": 200, "storage": "mongodb" }` or `"file"`, showing which backend is active.
