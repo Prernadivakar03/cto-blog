@@ -1,35 +1,31 @@
 # CTO Journal: Construction Trade Promotion Organization
 
-A responsive single-page blog built for the Construction Trade Promotion Organization (CTO) / Alpha Konnect Koncepts. It has a live title search, a dynamic posts API, and a newsletter form backed by an Express server.
+A responsive single-page blog for the Construction Trade Promotion Organization (CTO) / Alpha Konnect Koncepts. It has live title search, full article pages, a posts API, and a newsletter form backed by MongoDB.
 
 **Live demo:** https://cto-blog.onrender.com/
+**Video walkthrough:** `<paste link here>`
 
-
-> The app is hosted on Render's free tier. If it has been idle, the first load can take 30 to 50 seconds while the service wakes up.
+> Hosted on Render's free tier. After idle time the first load can take 30 to 50 seconds while the service wakes up.
 
 ---
 
 ## Features
 
 **Frontend**
-- Header with the Alpha Konnect Koncepts logo on the left and a search bar
+- Header with the Alpha Konnect Koncepts logo and a search bar
 - Real-time filtering of posts by title as you type
-- Grid of 5 blog posts, each with a title, excerpt, published date, category tag and thumbnail
-- The first post is shown as a wider featured card on desktop
-- Thumbnails are generated SVG blueprint illustrations, so no external images are needed
-- Fully responsive on mobile, tablet and desktop
-- Footer with a copyright notice and placeholder navigation links
-- Newsletter form with:
-  - frontend email validation (empty and bad-format checks) before any request is sent
-  - a loading spinner and disabled button while the request is in flight
-  - a clear success message and a cleared input on success
-  - inline error messages for validation, duplicate or network failures
+- Grid of 5 posts, each with title, excerpt, date, category tag and a generated SVG blueprint thumbnail
+- Full article pages at `#/post/:id`, with a back link and a per-article tab title
+- Fully responsive for mobile, tablet and desktop
+- Footer with copyright and working navigation links
+- Newsletter form with frontend validation, a loading spinner, a success message and a cleared input
+- Accessibility: skip link, visible focus styles, ARIA live regions, reduced-motion support
+- Error boundary so a render crash shows a message instead of a blank page
 
 **Backend**
-- `GET /api/posts` serves the blog data dynamically from JSON
-- `POST /api/subscribe` validates the email and stores it in `subscribers.json`
-- Duplicate emails are rejected
-- In production, Express also serves the built React app, so one service runs everything
+- `GET /api/posts`, `GET /api/posts/:id`, `POST /api/subscribe`, `GET /api/health`
+- MongoDB storage with a unique email index; JSON-file storage for local development
+- Rate limiting, security headers, strict input validation, JSON errors everywhere
 
 ---
 
@@ -38,9 +34,10 @@ A responsive single-page blog built for the Construction Trade Promotion Organiz
 | Layer | Technology |
 |---|---|
 | Frontend | React 18, Vite, plain CSS |
-| Backend | Node.js, Express |
-| Storage | Local JSON file (`subscribers.json`) |
-| Hosting | Render (single web service) |
+| Backend | Node.js 20+, Express |
+| Database | MongoDB Atlas (JSON-file fallback for local dev) |
+| Testing | Node test runner, Vitest, React Testing Library |
+| CI / Hosting | GitHub Actions, Render |
 
 ---
 
@@ -48,28 +45,32 @@ A responsive single-page blog built for the Construction Trade Promotion Organiz
 
 ```
 cto-blog/
-├── package.json              # root scripts used by Render
-├── .gitignore
-├── README.md
+├── package.json              # root scripts used by Render and tests
+├── render.yaml               # Render service definition
+├── .github/workflows/ci.yml  # runs tests + build on every push
 ├── server/
-│   ├── package.json
-│   ├── index.js              # Express API + static file serving
-│   └── data/posts.json       # blog post data
+│   ├── index.js              # startup + graceful shutdown
+│   ├── app.js                # Express app: routes, security, errors
+│   ├── storage.js            # MongoDB store + JSON-file store
+│   ├── api.test.js           # API tests
+│   └── data/posts.json       # seed data for the posts collection
 └── client/
-    ├── package.json
-    ├── vite.config.js        # dev proxy: /api -> localhost:3000
-    ├── index.html
+    ├── vite.config.js        # dev proxy + Vitest config
     └── src/
         ├── main.jsx
-        ├── App.jsx           # data fetching + search state
+        ├── App.jsx           # data fetching, search state, hash routing
         ├── styles.css
+        ├── test-setup.js
         ├── assets/           # logo files
         └── components/
             ├── Header.jsx
             ├── PostCard.jsx
-            ├── Thumb.jsx     # generated SVG thumbnails
+            ├── Article.jsx
+            ├── Thumb.jsx         # generated SVG thumbnails
             ├── Newsletter.jsx
-            └── Footer.jsx
+            ├── Footer.jsx
+            ├── ErrorBoundary.jsx
+            └── *.test.jsx        # component tests
 ```
 
 ---
@@ -77,138 +78,116 @@ cto-blog/
 ## API Reference
 
 ### `GET /api/posts`
-
-Returns all blog posts.
-
+Returns all posts (without article bodies), newest first.
 ```json
-{
-  "status": 200,
-  "count": 5,
-  "posts": [
-    {
-      "id": 1,
-      "title": "Novel 3D Printing in Modern Civil Engineering",
-      "excerpt": "Layer-by-layer concrete extrusion is ...",
-      "date": "2026-09-22",
-      "category": "3D Printing"
-    }
-  ]
-}
+{ "status": 200, "count": 5, "posts": [ { "id": 1, "title": "...", "excerpt": "...", "date": "2026-09-22", "category": "3D Printing" } ] }
 ```
+
+### `GET /api/posts/:id`
+Returns one post including its `content` array. Unknown ids return `404`.
 
 ### `POST /api/subscribe`
+Request: `{ "email": "you@example.com" }`
 
-**Request body**
-```json
-{ "email": "you@example.com" }
-```
-
-**Responses**
-
-| Status | Body | When |
+| Status | Message | When |
 |---|---|---|
-| 200 | `{ "status": 200, "message": "Subscription successful" }` | Email saved |
-| 400 | `{ "status": 400, "message": "Email is required" }` | Missing or empty email |
-| 400 | `{ "status": 400, "message": "Please enter a valid email address" }` | Invalid format |
-| 409 | `{ "status": 409, "message": "You're already subscribed" }` | Duplicate email |
+| 200 | `Subscription successful` | Email stored |
+| 400 | `Email is required` | Missing, empty or non-string email |
+| 400 | `Please enter a valid email address` | Bad format or over 254 characters |
+| 400 | `Invalid JSON body` | Malformed request body |
+| 409 | `You're already subscribed` | Duplicate email |
+| 413 | `Request too large` | Body over 10kb |
+| 429 | `Too many attempts...` | More than 10 requests per 15 minutes per IP |
 
-Subscribers are stored in `server/subscribers.json`:
-
-```json
-[
-  { "email": "test@example.com", "subscribedAt": "2026-09-30T14:10:22.531Z" }
-]
-```
+### `GET /api/health`
+Returns `{ "status": 200, "storage": "mongodb" }` or `"file"`, showing which backend is active.
 
 ---
 
 ## Running Locally
 
-**Requirements:** Node.js 18 or newer
+Requires Node.js 20 or newer.
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/Prernadivakar03/cto-blog.git
 cd cto-blog
 
-# 2. Start the backend (terminal 1)
-cd server
-npm install
-npm run dev          # http://localhost:3000
+# terminal 1: backend
+cd server && npm install && npm run dev      # http://localhost:3000
 
-# 3. Start the frontend (terminal 2)
-cd client
-npm install
-npm run dev          # http://localhost:5173
+# terminal 2: frontend
+cd client && npm install && npm run dev      # http://localhost:5173
 ```
 
-Open **http://localhost:5173**. Vite proxies `/api` requests to the Express server.
+Without `MONGODB_URI`, the server stores subscribers in `server/subscribers.json`. To use MongoDB locally, set `MONGODB_URI` before starting the server.
 
-### Production build (optional local test)
-
+Production build test:
 ```bash
-# from the project root
-npm run build
-npm start            # http://localhost:3000 serves the full app
+npm run build && npm start     # http://localhost:3000
 ```
 
 ---
 
-## Deployment (Render)
+## Testing
 
-The project is deployed as a single Render Web Service.
+```bash
+npm test      # server + client
+```
+- **Server (Node test runner, 10 tests):** posts routes, security headers, all subscribe cases (missing, non-string, invalid, oversized, success, duplicate), malformed JSON, rate limiting
+- **Client (Vitest + React Testing Library, 11 tests):** live search filtering, article page, newsletter validation, success, server error and non-JSON error handling
+- **CI:** GitHub Actions runs both suites and the production build on every push
+
+---
+
+## Deployment (Render)
 
 | Setting | Value |
 |---|---|
 | Runtime | Node |
 | Build Command | `npm run build` |
 | Start Command | `npm start` |
-| Environment variable | `NODE_VERSION=20` |
+| Health Check Path | `/api/health` |
 
-The build installs the client dependencies, builds the React app into `client/dist`, and installs the server dependencies. Express then serves `client/dist` along with the API routes.
+| Environment variable | Purpose |
+|---|---|
+| `NODE_VERSION` | `20` |
+| `MONGODB_URI` | MongoDB Atlas connection string (secret) |
+| `MONGODB_DB` | Optional database name (default `cto_blog`) |
+| `ALLOW_FILE_FALLBACK` | Optional. Set to `true` to allow file storage if MongoDB is unreachable. Off by default so signups are never silently lost |
+
+If `MONGODB_URI` is set but the database can't be reached, the server refuses to start and logs the reason, instead of quietly falling back to a disk that Render resets.
+
+---
+
+## Security
+
+- Helmet security headers with a Content Security Policy
+- Rate limiting on `POST /api/subscribe` (in-memory, suited to a single instance)
+- Validation: type check, format check, 254-character limit, 10kb body limit
+- Unique database index makes duplicate protection atomic under concurrent requests
+- Atomic writes for the file store; JSON errors with no stack traces
+- Secrets live in environment variables, never in the repo
 
 ---
 
 ## Design Notes
 
-The visual direction is a "blueprint and gold" look:
-- Charcoal and gold palette taken from the Alpha Konnect Koncepts logo
-- A technical-drawing grid pattern in the hero and thumbnails
-- Condensed uppercase headings (Barlow Condensed) with Inter for body text
-- Numbered cards and a featured first post for an editorial feel
+A "blueprint and gold" look: charcoal and gold taken from the Alpha Konnect Koncepts logo, a technical-drawing grid, condensed uppercase headings (Barlow Condensed) with Inter for body text, numbered cards, and a featured first post. Thumbnails are generated SVGs, so there are no external image dependencies.
 
 ---
-## Security
-
-- Helmet security headers with a Content Security Policy
-- Rate limiting on `POST /api/subscribe` (10 requests per 15 minutes per IP)
-- Strict validation: type check, format check, 254-character limit, 10kb body limit
-- Unique database index prevents duplicate subscribers, even under concurrent requests
-- Atomic file writes, JSON error responses and no stack traces leaked
-- Secrets (`MONGODB_URI`) live in environment variables, never in the repo
-
-## Storage
-
-- **Production:** MongoDB Atlas (`MONGODB_URI`). Posts are seeded on first run and subscribers are stored with a unique email index.
-- **Local / fallback:** JSON files, used automatically when `MONGODB_URI` is not set or the connection fails.
-- `GET /api/health` reports which backend is active.
-
-## Testing
-
-```bash
-npm test            # server + client
-```
-- Server (Node test runner): posts routes, security headers, every subscribe case, malformed JSON, rate limiting
-- Client (Vitest + React Testing Library): live search filtering, newsletter validation, success, server error and non-JSON error handling
-- GitHub Actions runs the tests and the production build on every push.
 
 ## Known Limitations and Next Steps
 
-- Posts are managed directly in MongoDB; an admin UI would be the next step
-- Double opt-in email confirmation and an unsubscribe link
-- End-to-end browser tests (Playwright)
+- **No email is sent.** Signups are stored but there is no mailer, double opt-in or unsubscribe link yet.
+- **Duplicate responses reveal membership.** The `409` lets someone check whether an address is subscribed. A production system would return the same response either way.
+- **Hash routing.** Article URLs (`#/post/:id`) share the same page metadata, so link previews and SEO are limited. Server-rendered or path-based routes would fix this.
+- **Atlas access list uses `0.0.0.0/0`** because Render's free tier has no fixed outbound IP. Production would use static IPs or a private endpoint.
+- **Posts are managed directly in MongoDB.** An admin UI would be the next step.
+- **Rate limiter is in-memory**, so it applies per instance.
+- Possible additions: linting, Mongo store tests, end-to-end browser tests.
 
+---
 
 ## Author
 
-`Prerna Divakar`
+`<Your Name>`

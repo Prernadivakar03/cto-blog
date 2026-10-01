@@ -5,10 +5,10 @@ export default function Header({ query, onQuery }) {
   return (
     <header className="site-header">
       <div className="wrap header-inner">
-        <a href="/" className="brand" aria-label="Alpha Konnect Koncepts home">
-          <img src={logoMark} alt="" className="brand-mark" />
-          <img src={logoText} alt="Alpha Konnect Koncepts" className="brand-text" />
-        </a>
+        <a href="#/" className="brand" aria-label="Alpha Konnect Koncepts home">
+  <img src={logoMark} alt="" className="brand-mark" width="46" height="46" />
+  <img src={logoText} alt="Alpha Konnect Koncepts" className="brand-text" width="326" height="26" />
+</a>
 
         <form className="search" role="search" onSubmit={(e) => e.preventDefault()}>
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">

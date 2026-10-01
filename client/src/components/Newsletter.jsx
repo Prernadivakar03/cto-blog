@@ -30,7 +30,7 @@ export default function Newsletter() {
 
       if (res.ok) {
         setMsg({
-          text: "You're in. Watch your inbox for the next site report.",
+          text: "You're subscribed. Thanks for joining the site report list.",
           type: "success",
         });
         setEmail("");

@@ -24,7 +24,9 @@ function createFileStore(subsFile = DEFAULT_SUBS_FILE) {
   return {
     kind: "file",
     async listPosts() {
-      return readJSON(POSTS_FILE).map(({ content, ...rest }) => rest);
+      return readJSON(POSTS_FILE)
+        .map(({ content, ...rest }) => rest)
+        .sort((a, b) => b.date.localeCompare(a.date));
     },
     async getPost(id) {
       return readJSON(POSTS_FILE).find((p) => p.id === id) || null;
@@ -80,17 +82,18 @@ async function createMongoStore(uri) {
 
 async function createStore() {
   const uri = process.env.MONGODB_URI;
-  if (uri) {
-    try {
-      return await createMongoStore(uri);
-    } catch (err) {
-      console.error(
-        "MongoDB connection failed, falling back to file storage:",
-        err.message
-      );
+  if (!uri) return createFileStore(process.env.SUBS_FILE);
+
+  try {
+    return await createMongoStore(uri);
+  } catch (err) {
+    // A configured database that is unreachable must not silently lose signups
+    if (process.env.ALLOW_FILE_FALLBACK === "true") {
+      console.error("MongoDB failed, using file storage:", err.message);
+      return createFileStore(process.env.SUBS_FILE);
     }
+    throw err;
   }
-  return createFileStore(process.env.SUBS_FILE);
 }
 
 module.exports = { createStore, createFileStore };

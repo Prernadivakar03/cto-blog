@@ -34,7 +34,7 @@ describe("Newsletter form", () => {
     await userEvent.type(emailInput(), "test@example.com");
     await userEvent.click(subscribeBtn());
 
-    expect(await screen.findByText(/you're in/i)).toBeInTheDocument();
+    expect(await screen.findByText(/you're subscribed/i)).toBeInTheDocument();
     expect(emailInput()).toHaveValue("");
     expect(fetch).toHaveBeenCalledWith(
       "/api/subscribe",
