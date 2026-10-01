@@ -12,13 +12,8 @@ export default function Article({ id }) {
   const [post, setPost] = useState(null);
   const [status, setStatus] = useState("loading");
 
+  // Load the article
   useEffect(() => {
-    if (post) document.title = `${post.title} · CTO Journal`;
-    return () => {
-      document.title = "CTO Journal · Construction Trade Promotion Organization";
-    };
-  }, [post]);
-  
     setStatus("loading");
     fetch(`/api/posts/${id}`)
       .then((r) => {
@@ -31,6 +26,14 @@ export default function Article({ id }) {
       })
       .catch(() => setStatus("error"));
   }, [id]);
+
+  // Give each article its own browser tab title
+  useEffect(() => {
+    if (post) document.title = `${post.title} · CTO Journal`;
+    return () => {
+      document.title = "CTO Journal · Construction Trade Promotion Organization";
+    };
+  }, [post]);
 
   return (
     <main className="wrap article" id="main-content">
