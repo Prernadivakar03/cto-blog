@@ -27,11 +27,19 @@ export default function Article({ id }) {
       .catch(() => setStatus("error"));
   }, [id]);
 
-  // Give each article its own browser tab title
+  // Per-article tab title and meta description
   useEffect(() => {
-    if (post) document.title = `${post.title} · CTO Journal`;
+    if (!post) return;
+    const defaultTitle = "CTO Journal · Construction Trade Promotion Organization";
+    const desc = document.querySelector('meta[name="description"]');
+    const defaultDesc = desc?.getAttribute("content");
+
+    document.title = `${post.title} · CTO Journal`;
+    desc?.setAttribute("content", post.excerpt);
+
     return () => {
-      document.title = "CTO Journal · Construction Trade Promotion Organization";
+      document.title = defaultTitle;
+      if (desc && defaultDesc) desc.setAttribute("content", defaultDesc);
     };
   }, [post]);
 

@@ -93,12 +93,9 @@ function createApp(store, { subscribeLimit = 10 } = {}) {
           .status(400)
           .json({ status: 400, message: "Please enter a valid email address" });
 
-      const result = await store.addSubscriber(email);
-      if (result === "duplicate")
-        return res
-          .status(409)
-          .json({ status: 409, message: "You're already subscribed" });
-
+      // Same response whether or not the address was already on the list,
+      // so the endpoint can't be used to check who is subscribed
+      await store.addSubscriber(email);
       res.status(200).json({ status: 200, message: "Subscription successful" });
     })
   );

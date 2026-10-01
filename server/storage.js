@@ -54,10 +54,12 @@ async function createMongoStore(uri) {
   // The unique index makes duplicate protection atomic, even under concurrent requests
   await subs.createIndex({ email: 1 }, { unique: true });
 
-  // Seed the posts collection on first run; afterwards posts can be edited in Atlas
-  if ((await posts.countDocuments()) === 0) {
-    await posts.insertMany(readJSON(POSTS_FILE));
-  }
+  // posts.json is the source of truth: sync it into the database on every start
+  await posts.bulkWrite(
+    readJSON(POSTS_FILE).map((p) => ({
+      replaceOne: { filter: { id: p.id }, replacement: p, upsert: true },
+    }))
+  );
 
   return {
     kind: "mongodb",

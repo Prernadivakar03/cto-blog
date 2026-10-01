@@ -79,15 +79,18 @@ test("subscribe rejects an invalid or oversized email", async () => {
   assert.strictEqual((await subscribe({ email: long })).status, 400);
 });
 
-test("subscribe stores a valid email, then rejects the duplicate", async () => {
+test("subscribe stores a valid email once and treats a repeat identically", async () => {
   const first = await subscribe({ email: "Test@Example.com " });
   assert.strictEqual(first.status, 200);
   assert.strictEqual((await first.json()).message, "Subscription successful");
 
-  const saved = JSON.parse(fs.readFileSync(subsFile, "utf8"));
-  assert.strictEqual(saved[0].email, "test@example.com");
+  const second = await subscribe({ email: "test@example.com" });
+  assert.strictEqual(second.status, 200);
+  assert.strictEqual((await second.json()).message, "Subscription successful");
 
-  assert.strictEqual((await subscribe({ email: "test@example.com" })).status, 409);
+  const saved = JSON.parse(fs.readFileSync(subsFile, "utf8"));
+  assert.strictEqual(saved.length, 1);
+  assert.strictEqual(saved[0].email, "test@example.com");
 });
 
 test("malformed JSON returns a 400 JSON error, not an HTML page", async () => {
