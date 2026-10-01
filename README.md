@@ -14,7 +14,7 @@ A responsive single-page blog for the Construction Trade Promotion Organization 
 - Header with the Alpha Konnect Koncepts logo and a search bar
 - Real-time filtering of posts by title as you type
 - Grid of 5 posts, each with title, excerpt, date, category tag and a generated SVG blueprint thumbnail
-- Full article pages at `#/post/:id`, with a back link and a per-article tab title
+- Full article pages at `#/post/:id`, with a back link, a per-article tab title and meta description
 - Fully responsive for mobile, tablet and desktop
 - Footer with copyright and working navigation links
 - Newsletter form with frontend validation, a loading spinner, a success message and a cleared input
@@ -50,9 +50,10 @@ cto-blog/
 ├── server/
 │   ├── index.js              # startup + graceful shutdown
 │   ├── app.js                # Express app: routes, security, errors
-│   ├── storage.js            # MongoDB store + JSON-file store
+│   ├── storage.js            # MongoDB store, JSON-file store, post sync
 │   ├── api.test.js           # API tests
-│   └── data/posts.json       # seed data for the posts collection
+│   ├── storage.test.js       # post sync tests
+│   └── data/posts.json       # source of truth for posts, synced to MongoDB on startup
 └── client/
     ├── vite.config.js        # dev proxy + Vitest config
     └── src/
@@ -90,7 +91,7 @@ Request: `{ "email": "you@example.com" }`
 
 | Status | Message | When |
 |---|---|---|
-| 200 | `Subscription successful` | Email stored |
+| 200 | `Subscription successful` | Email stored (or already on the list) |
 | 400 | `Email is required` | Missing, empty or non-string email |
 | 400 | `Please enter a valid email address` | Bad format or over 254 characters |
 | 400 | `Invalid JSON body` | Malformed request body |
@@ -133,9 +134,11 @@ npm run build && npm start     # http://localhost:3000
 ```bash
 npm test      # server + client
 ```
-- **Server (Node test runner, 10 tests):** posts routes, security headers, all subscribe cases (missing, non-string, invalid, oversized, success, duplicate), malformed JSON, rate limiting
+- **Server (Node test runner, 14 tests):** posts routes, security headers, all subscribe cases (missing, non-string, invalid, oversized, success, repeat signup, malformed JSON, rate limiting), and the post sync logic (insert, overwrite, remove stale posts, empty-file guard)
 - **Client (Vitest + React Testing Library, 11 tests):** live search filtering, article page, newsletter validation, success, server error and non-JSON error handling
 - **CI:** GitHub Actions runs both suites and the production build on every push
+
+The post sync tests run against an in-memory stand-in for the MongoDB collection, not a real database.
 
 ---
 
@@ -159,11 +162,18 @@ If `MONGODB_URI` is set but the database can't be reached, the server refuses to
 
 ---
 
+## Managing Posts
+
+`server/data/posts.json` is the source of truth. On every start the server syncs it into MongoDB: new and edited posts are upserted, and posts removed from the file are deleted from the database. An empty or unreadable file never wipes the collection. Edit posts in `posts.json` and redeploy; changes made directly in Atlas are overwritten on the next restart.
+
+---
+
 ## Security
 
 - Helmet security headers with a Content Security Policy
 - Rate limiting on `POST /api/subscribe` (in-memory, suited to a single instance)
 - Validation: type check, format check, 254-character limit, 10kb body limit
+- Identical response for new and repeat signups, so subscriber membership can't be probed
 - Unique database index makes duplicate protection atomic under concurrent requests
 - Atomic writes for the file store; JSON errors with no stack traces
 - Secrets live in environment variables, never in the repo
@@ -179,12 +189,11 @@ A "blueprint and gold" look: charcoal and gold taken from the Alpha Konnect Konc
 ## Known Limitations and Next Steps
 
 - **No email is sent.** Signups are stored but there is no mailer, double opt-in or unsubscribe link yet.
-- **Duplicate responses reveal membership.** The `409` lets someone check whether an address is subscribed. A production system would return the same response either way.
-- **Hash routing.** Article URLs (`#/post/:id`) share the same page metadata, so link previews and SEO are limited. Server-rendered or path-based routes would fix this.
+- **Hash routing.** Article URLs (`#/post/:id`) set their own title and meta description, but Open Graph tags are shared, so link previews are limited. Server-rendered or path-based routes would fix this.
 - **Atlas access list uses `0.0.0.0/0`** because Render's free tier has no fixed outbound IP. Production would use static IPs or a private endpoint.
-- **Posts are managed directly in MongoDB.** An admin UI would be the next step.
+- **Posts are edited in `posts.json`.** An admin UI would be the next step.
 - **Rate limiter is in-memory**, so it applies per instance.
-- Possible additions: linting, Mongo store tests, end-to-end browser tests.
+- Possible additions: linting, tests against a real MongoDB instance, end-to-end browser tests.
 
 ---
 

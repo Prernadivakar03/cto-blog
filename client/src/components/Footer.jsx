@@ -1,7 +1,9 @@
+const CONTACT_EMAIL = "prernadivakar0328@gmail.com"; // <-- replace with your real address
+
 const links = [
   { label: "All articles", href: "#/" },
   { label: "Newsletter", href: "#newsletter" },
-  { label: "Contact", href: "mailto:YOUR_GMAIL_ADDRESS" }, 
+  { label: "Contact", href: `mailto:${CONTACT_EMAIL}` },
   { label: "Back to top", href: "#top" },
 ];
 
