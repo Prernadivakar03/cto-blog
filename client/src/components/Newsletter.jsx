@@ -9,10 +9,13 @@ export default function Newsletter() {
 
   const submit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     const value = email.trim();
 
-    if (!value) return setMsg({ text: "Please enter your email.", type: "error" });
-    if (!EMAIL_RE.test(value)) return setMsg({ text: "That doesn't look like a valid email.", type: "error" });
+    if (!value)
+      return setMsg({ text: "Please enter your email.", type: "error" });
+    if (value.length > 254 || !EMAIL_RE.test(value))
+      return setMsg({ text: "That doesn't look like a valid email.", type: "error" });
 
     setLoading(true);
     setMsg({ text: "", type: "" });
@@ -22,12 +25,20 @@ export default function Newsletter() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: value }),
       });
-      const data = await res.json();
+      // Don't crash if the server returns something that isn't JSON
+      const data = await res.json().catch(() => ({}));
+
       if (res.ok) {
-        setMsg({ text: "You're in. Watch your inbox for the next site report.", type: "success" });
+        setMsg({
+          text: "You're in. Watch your inbox for the next site report.",
+          type: "success",
+        });
         setEmail("");
       } else {
-        setMsg({ text: data.message || "Something went wrong.", type: "error" });
+        setMsg({
+          text: data.message || "Something went wrong. Please try again.",
+          type: "error",
+        });
       }
     } catch {
       setMsg({ text: "Network error. Please try again.", type: "error" });
@@ -37,7 +48,7 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="newsletter">
+    <section className="newsletter" id="newsletter">
       <div className="wrap news-inner">
         <div>
           <h2>Get the site report.</h2>
@@ -48,16 +59,27 @@ export default function Newsletter() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              maxLength={254}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (msg.text) setMsg({ text: "", type: "" });
+              }}
               placeholder="you@company.com"
               aria-label="Email address"
+              aria-invalid={msg.type === "error"}
               autoComplete="email"
             />
             <button type="submit" disabled={loading}>
-              {loading ? <span className="spinner" aria-label="Submitting" /> : "Subscribe"}
+              {loading ? (
+                <span className="spinner" aria-label="Submitting" />
+              ) : (
+                "Subscribe"
+              )}
             </button>
           </div>
-          <p className={`form-msg ${msg.type}`} role="status">{msg.text}</p>
+          <p className={`form-msg ${msg.type}`} role="status" aria-live="polite">
+            {msg.text}
+          </p>
         </form>
       </div>
     </section>

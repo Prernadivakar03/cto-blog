@@ -15,7 +15,7 @@ export default function PostCard({ post, index, featured }) {
         <time dateTime={post.date}>{fmt(post.date)}</time>
         <h3>{post.title}</h3>
         <p>{post.excerpt}</p>
-        <a href="#" className="read" onClick={(e) => e.preventDefault()}>Read article →</a>
+        <a href={`#/post/${post.id}`} className="read">Read article →</a>
       </div>
     </article>
   );

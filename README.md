@@ -178,15 +178,36 @@ The visual direction is a "blueprint and gold" look:
 - Numbered cards and a featured first post for an editorial feel
 
 ---
+## Security
+
+- Helmet security headers with a Content Security Policy
+- Rate limiting on `POST /api/subscribe` (10 requests per 15 minutes per IP)
+- Strict validation: type check, format check, 254-character limit, 10kb body limit
+- Unique database index prevents duplicate subscribers, even under concurrent requests
+- Atomic file writes, JSON error responses and no stack traces leaked
+- Secrets (`MONGODB_URI`) live in environment variables, never in the repo
+
+## Storage
+
+- **Production:** MongoDB Atlas (`MONGODB_URI`). Posts are seeded on first run and subscribers are stored with a unique email index.
+- **Local / fallback:** JSON files, used automatically when `MONGODB_URI` is not set or the connection fails.
+- `GET /api/health` reports which backend is active.
+
+## Testing
+
+```bash
+npm test            # server + client
+```
+- Server (Node test runner): posts routes, security headers, every subscribe case, malformed JSON, rate limiting
+- Client (Vitest + React Testing Library): live search filtering, newsletter validation, success, server error and non-JSON error handling
+- GitHub Actions runs the tests and the production build on every push.
 
 ## Known Limitations and Next Steps
 
-- **Ephemeral storage:** on Render's free tier the filesystem resets on restart or redeploy, so `subscribers.json` can be wiped. For production, I would use MongoDB or SQLite on a persistent disk.
-- **Posts are static JSON:** they are served through the API but not editable at runtime. A CMS or database-backed admin would be the next step.
-- **Placeholder links:** "Read article" and the footer links are placeholders, as allowed by the brief.
-- **Possible improvements:** single-post detail pages, rate limiting on `/api/subscribe`, email confirmation (double opt-in), and automated tests.
+- Posts are managed directly in MongoDB; an admin UI would be the next step
+- Double opt-in email confirmation and an unsubscribe link
+- End-to-end browser tests (Playwright)
 
----
 
 ## Author
 

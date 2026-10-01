@@ -4,34 +4,59 @@
     "title": "Novel 3D Printing in Modern Civil Engineering",
     "excerpt": "Layer-by-layer concrete extrusion is cutting build times dramatically and reshaping how we think about structural geometry.",
     "date": "2026-09-22",
-    "category": "3D Printing"
+    "category": "3D Printing",
+    "content": [
+      "Large-scale 3D printing deposits concrete in precise layers, following a digital model with very little formwork. That removes one of the slowest and most wasteful steps in conventional building.",
+      "Because the printer follows geometry rather than timber moulds, curved walls, hollow cavities and integrated service channels become practical to build. Engineers can place material only where the structure needs it.",
+      "The challenge now is standards: reinforcement strategies, material certification and on-site quality control are still catching up with the technology."
+    ]
   },
   {
     "id": 2,
     "title": "Automated Gantry Systems in Site Construction",
     "excerpt": "Rail-mounted gantries bring factory precision to open sites, from rebar placement to facade assembly.",
     "date": "2026-09-15",
-    "category": "Automation"
+    "category": "Automation",
+    "content": [
+      "A gantry system spans the work area on rails and carries tools along three axes. It brings the repeatability of a factory floor to an outdoor site.",
+      "Typical uses include placing rebar, positioning prefabricated panels and applying finishes at a consistent pace, which reduces rework and improves worker safety at height.",
+      "Setup time and site layout are the main constraints, so gantries pay off most on repetitive, large-footprint projects."
+    ]
   },
   {
     "id": 3,
     "title": "Sustainable High-Rise Development Strategies",
     "excerpt": "Low-carbon cement, mass timber hybrids and passive cooling: what tall buildings look like in a net-zero decade.",
     "date": "2026-09-08",
-    "category": "Sustainability"
+    "category": "Sustainability",
+    "content": [
+      "Tall buildings carry a heavy embodied-carbon cost, mostly from cement and steel. Designers are now treating carbon as a design constraint from the first sketch.",
+      "Low-carbon cement blends, mass timber hybrids and optimised structural grids all reduce the footprint, while passive cooling and smart facades lower operating energy.",
+      "Lifecycle assessment is becoming the common language between architects, engineers and developers."
+    ]
   },
   {
     "id": 4,
     "title": "Digital Twins for Infrastructure Lifecycle Management",
     "excerpt": "Real-time sensor data mirrored in a virtual model helps teams predict maintenance before problems surface.",
     "date": "2026-08-29",
-    "category": "Digital"
+    "category": "Digital",
+    "content": [
+      "A digital twin is a living virtual model of an asset, fed by sensors that report strain, vibration, temperature and usage in real time.",
+      "Operators compare the live data against expected behaviour to spot wear early, schedule maintenance before failures and test changes safely in the model first.",
+      "The value grows over decades, so data standards and long-term ownership of the model matter as much as the sensors."
+    ]
   },
   {
     "id": 5,
     "title": "Robotic Bricklaying and the Future of Masonry",
     "excerpt": "Autonomous arms lay thousands of bricks a day, and skilled masons are becoming robot supervisors and designers.",
     "date": "2026-08-18",
-    "category": "Robotics"
+    "category": "Robotics",
+    "content": [
+      "Robotic bricklaying systems use a boom and a precision arm to pick, glue and place bricks according to a digital plan, working steadily through the day.",
+      "Rather than replacing masons, the technology shifts their role toward programming patterns, supervising the machine and finishing detail work.",
+      "Weather, uneven ground and supply logistics remain the practical hurdles on live sites."
+    ]
   }
 ]
