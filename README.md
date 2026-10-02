@@ -2,7 +2,7 @@
 
 A responsive single-page blog for the Construction Trade Promotion Organization (CTO) / Alpha Konnect Koncepts. It has live title search, full article pages, a posts API, and a double opt-in newsletter (confirmation, unsubscribe and sending) backed by MongoDB.
 
-**Live demo:** https://cto-blog.onrender.com/
+**Live demo:** https://cto-blog-1.onrender.com/
 
 > Hosted on Render's free tier. After idle time the first load can take 30 to 50 seconds while the service wakes up.
 
