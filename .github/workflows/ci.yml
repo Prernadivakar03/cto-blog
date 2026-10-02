@@ -1,0 +1,27 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    env:
+      MONGODB_TEST_URI: mongodb://localhost:27017
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run lint
+      - run: npm ci --prefix server
+      - run: npm test --prefix server
+      - run: npm ci --prefix client
+      - run: npm test --prefix client
+      - run: npm run build --prefix client
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e

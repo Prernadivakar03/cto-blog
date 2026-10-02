@@ -1,0 +1,9 @@
+node_modules
+client/dist
+server/subscribers.json
+.env
+.env.local
+*.tmp
+e2e/.tmp
+playwright-report
+test-results

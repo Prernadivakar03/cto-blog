@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: cto-blog
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: PUBLIC_URL        # e.g. https://cto-blog.onrender.com
+        sync: false
+      - key: RESEND_API_KEY    # sends the confirmation emails
+        sync: false
+      - key: MAIL_FROM         # e.g. CTO Journal <news@yourdomain.com>
+        sync: false
+      - key: ADMIN_TOKEN       # at least 24 random characters; enables /api/admin/newsletter
+        sync: false
+      - key: VITE_CONTACT_EMAIL  # optional footer contact link, read at build time
+        sync: false
